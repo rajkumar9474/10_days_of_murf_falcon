@@ -164,13 +164,17 @@ Then open http://localhost:3000 in your browser!
 
 Each day, you'll receive a new task that builds upon your voice agent. The tasks will help you:
 
-- Implement different personas and conversation styles
-- Add custom tools and capabilities
-- Integrate with external APIs
-- Build domain-specific agents (customer service, tutoring, etc.)
-- Optimize performance and user experience
-
-**Stay tuned for daily task announcements!**
+Progress Checklist:
+- [x] Day 1: Starter voice agent running end-to-end (backend + frontend), successful browser conversation, session video recorded, LinkedIn post published with required description, Murf Falcon mention, tags (#MurfAIVoiceAgentsChallenge, #10DaysofAIVoiceAgents).
+- [ ] Day 2: To be announced.
+- [ ] Day 3: To be announced.
+- [ ] Day 4: To be announced.
+- [ ] Day 5: To be announced.
+- [ ] Day 6: To be announced.
+- [ ] Day 7: To be announced.
+- [ ] Day 8: To be announced.
+- [ ] Day 9: To be announced.
+- [ ] Day 10: To be announced.
 
 ## Documentation & Resources
 
