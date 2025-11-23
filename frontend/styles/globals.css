@@ -158,4 +158,60 @@
       background-position: 250% 0;
     }
   }
+
+  /* Wellness-themed animations */
+  .animate-float {
+    animation: float 8s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 8s ease-in-out infinite;
+    animation-delay: 2s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) translateX(0);
+    }
+    25% {
+      transform: translateY(-20px) translateX(10px);
+    }
+    50% {
+      transform: translateY(-10px) translateX(-10px);
+    }
+    75% {
+      transform: translateY(-30px) translateX(5px);
+    }
+  }
+
+  .animate-pulse-gentle {
+    animation: pulse-gentle 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-gentle {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+  }
+
+  .animate-heartbeat {
+    animation: heartbeat 1.5s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  @keyframes heartbeat {
+    0%, 100% {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+    }
+    50% {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+    }
+  }
 }

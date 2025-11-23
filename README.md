@@ -167,7 +167,7 @@ Each day, you'll receive a new task that builds upon your voice agent. The tasks
 Progress Checklist:
 - [x] Day 1: Starter voice agent running end-to-end (backend + frontend), successful browser conversation, session video recorded, LinkedIn post published with required description, Murf Falcon mention, tags (#MurfAIVoiceAgentsChallenge, #10DaysofAIVoiceAgents).
 - [x] Day 2: Coffee shop barista agent with order state management, voice order placement, JSON order summary, browser session video, and LinkedIn post.
-- [ ] Day 3: To be announced.
+- [x] Day 3: Health & Wellness Voice Companion with daily check-ins, mood tracking, JSON persistence (wellness_log.json), previous session references, wellness-themed UI, browser session video, and LinkedIn post.
 - [ ] Day 4: To be announced.
 - [ ] Day 5: To be announced.
 - [ ] Day 6: To be announced.

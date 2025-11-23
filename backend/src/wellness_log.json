@@ -1,0 +1,59 @@
+[
+  {
+    "mood": "fine",
+    "energy_level": "fine",
+    "stress_factors": "none",
+    "objectives": [
+      "rest",
+      "sleep"
+    ],
+    "summary": "User is feeling fine with good energy and no stress. Objectives for the holiday are rest and sleep.",
+    "date": "2025-11-23 20:49:20"
+  },
+  {
+    "mood": "a bit stressed",
+    "energy_level": null,
+    "stress_factors": "classes and office work",
+    "objectives": [
+      "listen to some songs"
+    ],
+    "summary": "Today has been really stressful due to classes and office work. The objective is to listen to some songs to unwind.",
+    "date": "2025-11-23 20:51:03"
+  },
+  {
+    "mood": "fine",
+    "energy_level": "fully energetic",
+    "stress_factors": "none",
+    "objectives": [
+      "completed questions and reading",
+      "now relaxing"
+    ],
+    "summary": "Today, you are feeling fine and fully energetic, with no stress. You have already completed your questions and done some reading, and now your intention is to relax.",
+    "date": "2025-11-23 21:00:37"
+  },
+  {
+    "mood": "positive",
+    "energy_level": "medium to ten",
+    "stress_factors": "big presentation tomorrow",
+    "objectives": [
+      "Finish preparing presentation and slides",
+      "practice delivery at least once",
+      "go for a short walk to clear my head."
+    ],
+    "summary": "User is feeling positive with medium to high energy. The main stressor is a big presentation tomorrow. Objectives for today are to finish preparing the presentation and slides, practice delivery at least once, and go for a short walk to clear their head.",
+    "date": "2025-11-23 23:44:06"
+  },
+  {
+    "mood": "Relieved, accomplished, good overall",
+    "energy_level": "Medium, a bit tired",
+    "stress_factors": "Presentation today went well, but tired from work yesterday",
+    "objectives": [
+      "Take some rest",
+      "catch up on reading",
+      "organize workspace",
+      "get quality sleep"
+    ],
+    "summary": "Mood: Relieved, accomplished, good overall. Energy: Medium, a bit tired. Stress factors: Successful presentation today, but tired from work yesterday. Objectives: Take some rest, catch up on reading, organize workspace, get quality sleep.",
+    "date": "2025-11-23 23:56:37"
+  }
+]
