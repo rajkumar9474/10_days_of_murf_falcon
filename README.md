@@ -167,9 +167,9 @@ Each day, you'll receive a new task that builds upon your voice agent. The tasks
 Progress Checklist:
 - [x] Day 1: Starter voice agent running end-to-end (backend + frontend), successful browser conversation, session video recorded, LinkedIn post published with required description, Murf Falcon mention, tags (#MurfAIVoiceAgentsChallenge, #10DaysofAIVoiceAgents).
 - [x] Day 2: Coffee shop barista agent with order state management, voice order placement, JSON order summary, browser session video, and LinkedIn post.
-- [ ] Day 3: To be announced.
-- [ ] Day 4: To be announced.
-- [ ] Day 5: To be announced.
+- [x] Day 3: Health & Wellness Voice Companion with daily check-ins, mood tracking, JSON persistence (wellness_log.json), previous session references, wellness-themed UI, browser session video, and LinkedIn post.
+- [x] Day 4: Teach-the-Tutor Active Recall Coach with three learning modes (Learn/Quiz/Teach-Back), mode-specific Murf Falcon voices (Matthew/Alicia/Ken), concept library (Variables, Loops, Functions, Conditionals, Data Types, Lists), mastery tracking with scoring, educational-themed UI, browser session video, and LinkedIn post.
+- [x] Day 5: Physics Wallah SDR Agent with FAQ answering system, natural lead capture (name, class, exam, contact, preparation status, weak subjects, timeline), end-of-call summary with JSON export (backend/KMS/logs/), Physics Wallah-branded UI with gradient animations, browser session video, and LinkedIn post.
 - [ ] Day 6: To be announced.
 - [ ] Day 7: To be announced.
 - [ ] Day 8: To be announced.
