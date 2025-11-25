@@ -3,9 +3,8 @@
 import json
 import logging
 import os
-from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
 from livekit.agents import (
@@ -30,349 +29,235 @@ logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
-LEARNING_MODES = ("learn", "quiz", "teach_back")
-VOICE_PERSONAS = {
-    "learn": {
-        "voice": "en-US-matthew",
-        "style": "Conversation",
-        "display": "Matthew",
-        "tone": "calm, encouraging explanations",
-    },
-    "quiz": {
-        "voice": "en-US-alicia",
-        "style": "Conversation",
-        "display": "Alicia",
-        "tone": "energetic quiz master",
-    },
-    "teach_back": {
-        "voice": "en-US-ken",
-        "style": "Conversation",
-        "display": "Ken",
-        "tone": "supportive coach who listens closely",
-    },
-}
+# Load FAQ data
+FAQ_FILE = Path(__file__).parent / "company_faq.json"
+with open(FAQ_FILE, 'r') as f:
+    COMPANY_DATA = json.load(f)
 
 
-@dataclass
-class TutorConcept:
-    """Structured representation of one concept."""
+class Assistant(Agent):
+    def __init__(self) -> None:
+        # Initialize lead data for this session
+        self.lead_data = {
+            "name": None,
+            "student_class": None,  # Class 11, 12, or Dropper
+            "target_exam": None,  # JEE or NEET
+            "contact": None,  # Phone or email
+            "current_preparation": None,  # Taking coaching, self-study, etc.
+            "weak_subjects": None,
+            "timeline": None  # When planning to enroll
+        }
+        super().__init__(
+            instructions=f"""You are Harsha, an enthusiastic and helpful Sales Development Representative (SDR) for {COMPANY_DATA['company']['name']}.
 
-    id: str
-    title: str
-    summary: str
-    sample_question: str
-    teach_back_prompt: str
+Company Overview: {COMPANY_DATA['company']['description']}
 
+Your role:
+- Greet visitors warmly and professionally - introduce yourself as Harsha from Physics Wallah
+- ALWAYS ask for their name early in the conversation - this is mandatory , wait for their response before proceeding
+- Ask what they are preparing for (JEE, NEET, or both) and how you can help them
+- Understand their needs, challenges, and exam preparation goals
+- Answer questions about our products, pricing, and services using the available tools
+- Naturally collect important information about the lead during the conversation
+- Keep the conversation focused and engaging
+- Be curious, friendly, and helpful
 
-@dataclass
-class ConceptMastery:
-    """Simple counters that let the tutor track progress."""
+Important - You MUST collect these details during the conversation:
+1. Student's name (ask early)
+2. Current class (Class 11, Class 12, or Dropper)
+3. Target exam (JEE or NEET)
+4. Contact information - phone number OR email (ask for the best way to reach them)
+5. Current preparation approach
+6. Weak subjects if any
+7. Timeline for enrollment
 
-    times_learned: int = 0
-    times_quizzed: int = 0
-    times_taught_back: int = 0
-    last_score: Optional[int] = None
-    last_feedback: Optional[str] = None
+Remember:
+- You are speaking via voice, so keep responses conversational and concise
+- Avoid complex formatting, emojis, asterisks, or symbols
+- Use the FAQ tool to answer specific questions about our company, products, and pricing
+- Use the lead capture tools to store information as you learn it during natural conversation
+- Don't ask for all information at once - gather it naturally throughout the conversation
+- When asking for contact, ask "What's the best way to reach you - phone number or email?" and save whatever they provide
+- When the user indicates they are done, use the end_call_summary tool to save all information
 
+Key products: {', '.join([p['name'] for p in COMPANY_DATA['products']])}
+""",
+        )
 
-@dataclass
-class TutorSessionState:
-    """Conversation-specific session state."""
-
-    current_mode: Optional[str] = None
-    current_concept_id: Optional[str] = None
-    mastery: Dict[str, ConceptMastery] = field(default_factory=dict)
-
-    def ensure_mastery(self, concept_id: str) -> ConceptMastery:
-        if concept_id not in self.mastery:
-            self.mastery[concept_id] = ConceptMastery()
-        return self.mastery[concept_id]
-
-
-class TutorContentLibrary:
-    """Loads and serves concept content from JSON."""
-
-    def __init__(self, concepts: List[TutorConcept]):
-        if not concepts:
-            raise ValueError("TutorContentLibrary requires at least one concept.")
-        self._concepts: Dict[str, TutorConcept] = {c.id: c for c in concepts}
-        self._order: List[str] = [c.id for c in concepts]
-
-    @classmethod
-    def from_path(cls, content_path: Path) -> "TutorContentLibrary":
-        if not content_path.exists():
-            raise FileNotFoundError(f"Tutor content file not found: {content_path}")
-        with open(content_path, "r", encoding="utf-8") as f:
-            raw = json.load(f)
-        concepts = [TutorConcept(**item) for item in raw]
-        return cls(concepts)
-
-    @classmethod
-    def from_env(cls) -> "TutorContentLibrary":
-        default_path = Path(__file__).resolve().parents[1] / "shared-data" / "day4_tutor_content.json"
-        configured = os.getenv("DAY4_TUTOR_CONTENT_PATH")
-        path = Path(configured) if configured else default_path
-        return cls.from_path(path)
-
-    def list_concepts(self) -> List[TutorConcept]:
-        return [self._concepts[cid] for cid in self._order]
-
-    def get(self, concept_id: Optional[str]) -> TutorConcept:
-        target_id = concept_id or self._order[0]
-        if target_id not in self._concepts:
-            raise KeyError(f"Unknown concept id: {target_id}")
-        return self._concepts[target_id]
-
-    def next_concept_id(self, current_id: Optional[str]) -> str:
-        if current_id is None:
-            return self._order[0]
-        try:
-            idx = self._order.index(current_id)
-        except ValueError:
-            return self._order[0]
-        return self._order[(idx + 1) % len(self._order)]
-
-
-@dataclass
-class Userdata:
-    """Holds both the session state and the content library."""
-
-    state: TutorSessionState
-    content: TutorContentLibrary
-
-
-class TeachTheTutorAgent(Agent):
-    """Active recall coach with mode-specific personas."""
-
-    def __init__(self, *, userdata: Userdata) -> None:
-        instructions = """You are Teach-the-Tutor, an active recall coach powered by Murf Falcon's fast AI voices.
-
-Your mission: Help users master coding concepts through three learning modes.
-
-WORKFLOW:
-1. GREETING (first interaction only):
-   - Warmly greet the user
-   - Explain the three learning modes:
-     * LEARN mode (Matthew's voice) - I explain concepts to you
-     * QUIZ mode (Alicia's voice) - She tests your knowledge with questions
-     * TEACH BACK mode (Ken's voice) - You explain concepts back to him and he evaluates
-   - Ask which mode they'd like to start with
-   - Wait for their response
-
-2. MODE SELECTION:
-   - When user chooses a mode (learn, quiz, or teach_back), do these steps IN ORDER:
-     a) Call set_learning_mode with their chosen mode
-     b) Acknowledge the mode switch enthusiastically (e.g., "Great! I've switched to learn mode with Matthew's voice!")
-     c) Call list_concepts to get available topics
-     d) Tell them the available topics in a friendly way
-     e) Ask which topic they want to focus on
-   - Wait for them to choose a topic
-   - Call set_focus_concept with their choice
-   - Now proceed with the mode-specific interaction
-
-3. MODE-SPECIFIC BEHAVIOR:
-   
-   LEARN MODE (Matthew - calm, encouraging):
-   - Call describe_current_concept to get the summary
-   - Explain the concept in simple, clear terms
-   - Ask if they understand or have questions
-   - Offer to quiz them, switch modes, or try another concept
-   
-   QUIZ MODE (Alicia - energetic, enthusiastic):
-   - Call get_quiz_prompt to get the question
-   - Ask the question with energy and enthusiasm
-   - Listen to their answer
-   - Provide immediate, encouraging feedback
-   - Offer to continue quizzing, switch modes, or try a new concept
-   
-   TEACH_BACK MODE (Ken - supportive, patient):
-   - Call get_teach_back_prompt to get the instruction
-   - Ask the user to explain the concept back to you
-   - Listen carefully to their full explanation
-   - Evaluate their explanation (score 0-100)
-   - Call record_mastery_event with the score and feedback
-   - Give encouraging, constructive feedback
-   - Tell them what they did well and what to improve
-
-4. MODE SWITCHING:
-   - When user asks to switch modes, do these steps:
-     a) Call set_learning_mode with the new mode
-     b) Acknowledge the switch (e.g., "Switching to quiz mode with Alicia!")
-     c) Call list_concepts to show available topics
-     d) Ask which topic they want to work on
-   - Continue from there
-
-5. PROGRESS TRACKING:
-   - If user asks about progress, call get_mastery_snapshot
-   - Share encouraging insights
-
-CRITICAL RULES:
-- ALWAYS respond after calling tools - never stay silent
-- Keep responses conversational (2-4 sentences)
-- One concept at a time, one question at a time
-- Always use the tools - don't make up content
-- Be encouraging and supportive
-- Make it fun and engaging!
-"""
-
-        super().__init__(instructions=instructions)
-
-    async def on_agent_speech_committed(self, ctx: RunContext[Userdata], message: str) -> None:
-        logger.info(f"Agent said: {message}")
-
-    async def on_user_speech_committed(self, ctx: RunContext[Userdata], message: str) -> None:
-        logger.info(f"User said: {message}")
-
-    def _require_concept(self, ctx: RunContext[Userdata]) -> TutorConcept:
-        state = ctx.userdata.state
-        try:
-            return ctx.userdata.content.get(state.current_concept_id)
-        except KeyError as exc:
-            raise ToolError(str(exc)) from exc
-
-    def _apply_voice_persona(self, ctx: RunContext[Userdata], mode: str) -> None:
-        """Apply the appropriate Murf Falcon voice for the selected mode."""
-        persona = VOICE_PERSONAS[mode]
-        tts_engine = ctx.session.tts
+    @function_tool
+    async def search_faq(self, context: RunContext, question: str):
+        """Search the company FAQ to answer questions about products, services, pricing, or company information.
         
-        if not tts_engine:
-            logger.warning("Cannot switch voices: session has no TTS engine configured.")
-            return
-
-        update_cb = getattr(tts_engine, "update_options", None)
-        if not callable(update_cb):
-            logger.warning(
-                "TTS engine %s does not support dynamic voice switching. Using initial voice.",
-                getattr(tts_engine, "provider", "unknown"),
-            )
-            return
-
-        try:
-            update_cb(voice=persona["voice"], style=persona["style"])
-            logger.info("✅ Switched to %s (Murf %s voice) for %s mode", mode, persona["display"], mode)
-        except Exception as exc:
-            logger.error("❌ Failed to update TTS voice for mode %s: %s", mode, exc)
-
-    @function_tool
-    async def list_concepts(self, ctx: RunContext[Userdata]) -> str:
-        """List available concepts with their IDs and titles so the learner can choose."""
-        concepts = ctx.userdata.content.list_concepts()
-        formatted = ", ".join(f"{c.id} ({c.title})" for c in concepts)
-        return f"Available concepts: {formatted}. Ask the learner which one they want to focus on."
-
-    @function_tool
-    async def set_focus_concept(self, ctx: RunContext[Userdata], concept_id: str) -> str:
-        """Set the active concept that the session should focus on."""
-        concept = ctx.userdata.content.get(concept_id)
-        ctx.userdata.state.current_concept_id = concept.id
-        ctx.userdata.state.ensure_mastery(concept.id)
-        return f"Concept locked: {concept.title}. You're clear to continue working on {concept.title}."
-
-    @function_tool
-    async def describe_current_concept(self, ctx: RunContext[Userdata]) -> str:
-        """Return the summary of the current concept for learn mode explanations."""
-        concept = self._require_concept(ctx)
-        mastery = ctx.userdata.state.ensure_mastery(concept.id)
-        mastery.times_learned += 1
-        return f"{concept.title}: {concept.summary}"
-
-    @function_tool
-    async def get_quiz_prompt(self, ctx: RunContext[Userdata]) -> str:
-        """Return a quiz question for the current concept."""
-        concept = self._require_concept(ctx)
-        mastery = ctx.userdata.state.ensure_mastery(concept.id)
-        mastery.times_quizzed += 1
-        return f"Quiz question for {concept.title}: {concept.sample_question}"
-
-    @function_tool
-    async def get_teach_back_prompt(self, ctx: RunContext[Userdata]) -> str:
-        """Return the teach-back instructions for the current concept."""
-        concept = self._require_concept(ctx)
-        mastery = ctx.userdata.state.ensure_mastery(concept.id)
-        mastery.times_taught_back += 1
-        return f"Teach this back: {concept.teach_back_prompt}"
-
-    @function_tool
-    async def set_learning_mode(self, ctx: RunContext[Userdata], mode: str) -> str:
-        """Switch to one of the supported modes: learn, quiz, teach_back."""
-        normalized = mode.lower()
-        if normalized not in LEARNING_MODES:
-            raise ToolError(
-                f"Unsupported mode '{mode}'. Choose from: {', '.join(LEARNING_MODES)}."
-            )
-        ctx.userdata.state.current_mode = normalized
-        persona = VOICE_PERSONAS[normalized]
-        self._apply_voice_persona(ctx, normalized)
-        return (
-            f"Switched to {normalized} mode. Murf Falcon voice {persona['display']} is now live "
-            f"({persona['tone']}). Let the learner know the new vibe and continue."
-        )
-
-    @function_tool
-    async def record_mastery_event(
-        self,
-        ctx: RunContext[Userdata],
-        mode: str,
-        concept_id: Optional[str] = None,
-        score: Optional[int] = None,
-        feedback: Optional[str] = None,
-    ) -> str:
-        """Update mastery stats after finishing an interaction."""
-        normalized = mode.lower()
-        if normalized not in LEARNING_MODES:
-            raise ToolError(f"Mode must be one of {', '.join(LEARNING_MODES)}.")
-        target_concept = concept_id or ctx.userdata.state.current_concept_id
-        if target_concept is None:
-            raise ToolError("Cannot record mastery without an active concept.")
-        mastery = ctx.userdata.state.ensure_mastery(target_concept)
-        if score is not None:
-            mastery.last_score = max(0, min(100, score))
-        if feedback:
-            mastery.last_feedback = feedback
-        return (
-            f"Mastery updated for {target_concept} after {normalized} mode. "
-            f"Latest score: {mastery.last_score if mastery.last_score is not None else 'n/a'}. "
-            f"Feedback noted."
-        )
-
-    @function_tool
-    async def get_mastery_snapshot(
-        self,
-        ctx: RunContext[Userdata],
-        concept_id: Optional[str] = None,
-    ) -> str:
-        """Summarize mastery stats for one concept or all of them."""
-        if concept_id:
-            concepts = [ctx.userdata.content.get(concept_id)]
+        Use this tool when the user asks about:
+        - What the company does
+        - Product features and capabilities
+        - Pricing and fees
+        - How to get started
+        - Who the service is for
+        - Any other company or product related questions
+        
+        Args:
+            question: The user's question about the company, products, or services
+        """
+        logger.info(f"Searching FAQ for: {question}")
+        
+        # Simple keyword matching - find the most relevant FAQ entry
+        question_lower = question.lower()
+        
+        # Check pricing if that's what they're asking about
+        if any(word in question_lower for word in ['price', 'cost', 'fee', 'charge', 'free', 'afford', 'cheap', 'expensive']):
+            pricing_info = COMPANY_DATA['pricing']
+            return f"Pricing: {pricing_info['lakshya_2year']}. {pricing_info['arjuna_1year']}. Test series: {pricing_info['test_series']}. We also have {pricing_info['youtube_free']}. {pricing_info['comparison']}."
+        
+        # Search through FAQ entries
+        best_match = None
+        best_score = 0
+        
+        for faq in COMPANY_DATA['faq']:
+            # Simple scoring based on keyword overlap
+            faq_words = set(faq['question'].lower().split() + faq['answer'].lower().split())
+            question_words = set(question_lower.split())
+            overlap = len(faq_words.intersection(question_words))
+            
+            if overlap > best_score:
+                best_score = overlap
+                best_match = faq
+        
+        if best_match and best_score > 0:
+            return best_match['answer']
         else:
-            concepts = ctx.userdata.content.list_concepts()
-        summaries = []
-        for concept in concepts:
-            mastery = ctx.userdata.state.mastery.get(concept.id, ConceptMastery())
-            summary = (
-                f"{concept.title}: learn={mastery.times_learned}, "
-                f"quiz={mastery.times_quizzed}, teach_back={mastery.times_taught_back}, "
-                f"last_score={mastery.last_score if mastery.last_score is not None else 'n/a'}"
-            )
-            if mastery.last_feedback:
-                summary += f", feedback='{mastery.last_feedback}'"
-            summaries.append(summary)
-        return " | ".join(summaries)
-
+            # Return general company info
+            return COMPANY_DATA['company']['description']
+    
     @function_tool
-    async def advance_to_next_concept(self, ctx: RunContext[Userdata]) -> str:
-        """Cycle to the next concept in the content list."""
-        next_id = ctx.userdata.content.next_concept_id(ctx.userdata.state.current_concept_id)
-        ctx.userdata.state.current_concept_id = next_id
-        ctx.userdata.state.ensure_mastery(next_id)
-        concept = ctx.userdata.content.get(next_id)
-        return f"Advanced to {concept.title}. Let the learner know the new focus."
+    async def save_lead_name(self, context: RunContext, name: str):
+        """Save the lead's name when they mention it during conversation.
+        
+        Args:
+            name: The lead's full name
+        """
+        logger.info(f"Saving lead name: {name}")
+        self.lead_data['name'] = name
+        return f"Got it, {name}. Nice to meet you!"
+    
+    @function_tool
+    async def save_student_class(self, context: RunContext, student_class: str):
+        """Save the student's current class or status when they mention it.
+        
+        Args:
+            student_class: The student's current class (e.g., Class 11, Class 12, Dropper, 12th pass)
+        """
+        logger.info(f"Saving student class: {student_class}")
+        self.lead_data['student_class'] = student_class
+        return f"Got it, you're in {student_class}. Perfect!"
+    
+    @function_tool
+    async def save_contact(self, context: RunContext, contact: str):
+        """Save the student's contact information when they provide it.
+        
+        Args:
+            contact: The student's phone number or email address
+        """
+        logger.info(f"Saving contact: {contact}")
+        self.lead_data['contact'] = contact
+        return "Perfect, I have your contact details."
+    
+    @function_tool
+    async def save_target_exam(self, context: RunContext, target_exam: str):
+        """Save the student's target exam when they mention it.
+        
+        Args:
+            target_exam: The exam student is preparing for (e.g., JEE Main, JEE Advanced, NEET, Both JEE and NEET)
+        """
+        logger.info(f"Saving target exam: {target_exam}")
+        self.lead_data['target_exam'] = target_exam
+        return f"Excellent! So you're preparing for {target_exam}. That's great!"
+    
+    @function_tool
+    async def save_current_preparation(self, context: RunContext, current_preparation: str):
+        """Save information about the student's current preparation status.
+        
+        Args:
+            current_preparation: How student is currently preparing (e.g., taking coaching, self-study, school only, dropped year)
+        """
+        logger.info(f"Saving current preparation: {current_preparation}")
+        self.lead_data['current_preparation'] = current_preparation
+        return "I understand. I've noted your current preparation approach."
+    
+    @function_tool
+    async def save_weak_subjects(self, context: RunContext, weak_subjects: str):
+        """Save information about subjects where the student needs help.
+        
+        Args:
+            weak_subjects: Subjects student struggles with (e.g., Physics, Chemistry, Mathematics, Biology, specific topics)
+        """
+        logger.info(f"Saving weak subjects: {weak_subjects}")
+        self.lead_data['weak_subjects'] = weak_subjects
+        return "Don't worry, our teachers are excellent at making difficult topics easy to understand!"
+    
+    @function_tool
+    async def save_timeline(self, context: RunContext, timeline: str):
+        """Save when the student plans to enroll or start preparation.
+        
+        Args:
+            timeline: When they plan to start (e.g., immediately, next week, next month, after exams, just exploring)
+        """
+        logger.info(f"Saving timeline: {timeline}")
+        self.lead_data['timeline'] = timeline
+        return "Great! I've noted when you're planning to start."
+    
+    @function_tool
+    async def end_call_summary(self, context: RunContext):
+        """Generate and save the final lead summary when the call is ending.
+        
+        Use this when the user indicates they are done, finished, or ready to end the call.
+        This will create a summary of all collected information.
+        """
+        logger.info("Generating end-of-call summary")
+        
+        # Save to JSON file
+        output_dir = Path(__file__).parent.parent / "KMS" / "logs"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_file = output_dir / f"lead_{timestamp}.json"
+        
+        summary_data = {
+            "timestamp": datetime.now().isoformat(),
+            "lead_info": self.lead_data.copy(),
+            "company": COMPANY_DATA['company']['name']
+        }
+        
+        with open(output_file, 'w') as f:
+            json.dump(summary_data, f, indent=2)
+        
+        logger.info(f"Lead data saved to {output_file}")
+        
+        # Generate verbal summary
+        summary_parts = []
+        if self.lead_data['name']:
+            summary_parts.append(f"We spoke with {self.lead_data['name']}")
+        if self.lead_data['student_class']:
+            summary_parts.append(f"who is in {self.lead_data['student_class']}")
+        if self.lead_data['target_exam']:
+            summary_parts.append(f"preparing for {self.lead_data['target_exam']}")
+        if self.lead_data['current_preparation']:
+            summary_parts.append(f"Currently {self.lead_data['current_preparation']}")
+        if self.lead_data['weak_subjects']:
+            summary_parts.append(f"Needs help with {self.lead_data['weak_subjects']}")
+        if self.lead_data['timeline']:
+            summary_parts.append(f"Planning to start: {self.lead_data['timeline']}")
+        
+        verbal_summary = ". ".join(summary_parts) if summary_parts else "We had a great conversation about your exam preparation"
+        
+        return f"Thank you so much for your time today! {verbal_summary}. I've saved all your information and our academic counselor will reach out to you soon to help you with the best batch and study plan. All the best for your preparation! Padhega India Tab Badhega India!"
 
 
 def prewarm(proc: JobProcess):
     """Prewarm models and load tutor content."""
     proc.userdata["vad"] = silero.VAD.load()
-    proc.userdata["tutor_content"] = TutorContentLibrary.from_env()
+    # Preload FAQ data
+    logger.info(f"Preloaded FAQ data for {COMPANY_DATA['company']['name']}")
 
 
 async def entrypoint(ctx: JobContext):

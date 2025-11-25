@@ -249,4 +249,64 @@
       stroke-dashoffset: 0;
     }
   }
+
+  /* Physics Wallah themed animations */
+  .animate-bounce-gentle {
+    animation: bounce-gentle 2s ease-in-out infinite;
+  }
+
+  @keyframes bounce-gentle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-swing {
+    animation: swing 1.5s ease-in-out infinite;
+    transform-origin: top center;
+  }
+
+  @keyframes swing {
+    0%, 100% {
+      transform: rotate(-5deg);
+    }
+    50% {
+      transform: rotate(5deg);
+    }
+  }
+
+  .animate-book-stack {
+    animation: book-stack 3s ease-in-out infinite;
+  }
+
+  @keyframes book-stack {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    33% {
+      transform: translateY(-2px);
+    }
+    66% {
+      transform: translateY(-4px);
+    }
+  }
+
+  .animate-twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  @keyframes twinkle {
+    0%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.5);
+    }
+  }
 }
+
