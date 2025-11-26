@@ -3,10 +3,10 @@ import { Button } from '@/components/livekit/button';
 function WelcomeImage() {
   return (
     <div className="relative">
-      {/* Animated gradient background circle */}
-      <div className="absolute -inset-12 bg-gradient-to-br from-orange-400/20 via-red-400/20 to-yellow-400/20 rounded-full blur-3xl animate-pulse" />
+      {/* Animated gradient background */}
+      <div className="absolute -inset-12 bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-teal-500/20 rounded-full blur-3xl animate-pulse" />
       
-      {/* Physics Wallah Logo-inspired icon */}
+      {/* Bank Security Shield Icon */}
       <svg
         width="120"
         height="120"
@@ -15,32 +15,33 @@ function WelcomeImage() {
         xmlns="http://www.w3.org/2000/svg"
         className="relative mb-6"
       >
-        {/* Graduation cap */}
+        {/* Shield */}
         <g className="animate-bounce-gentle">
-          {/* Cap top */}
           <path
-            d="M60 25 L20 40 L60 55 L100 40 Z"
-            fill="#FF6B35"
-            className="drop-shadow-lg"
+            d="M60 10 L95 25 L95 50 C95 75 80 95 60 110 C40 95 25 75 25 50 L25 25 Z"
+            fill="url(#shieldGradient)"
+            className="drop-shadow-2xl"
           />
-          {/* Cap board */}
-          <rect x="15" y="40" width="90" height="4" rx="2" fill="#FF6B35" opacity="0.8" />
-          {/* Cap tassel */}
-          <circle cx="102" cy="35" r="3" fill="#FFD700" className="animate-swing" />
-          <line x1="102" y1="38" x2="102" y2="48" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
+          <defs>
+            <linearGradient id="shieldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#0EA5E9" />
+              <stop offset="50%" stopColor="#06B6D4" />
+              <stop offset="100%" stopColor="#14B8A6" />
+            </linearGradient>
+          </defs>
+          
+          {/* Lock icon in shield */}
+          <circle cx="60" cy="55" r="12" fill="white" opacity="0.9" />
+          <rect x="54" y="60" width="12" height="15" rx="2" fill="white" opacity="0.9" />
+          <path d="M54 58 L54 52 C54 48.7 56.7 46 60 46 C63.3 46 66 48.7 66 52 L66 58" 
+                stroke="white" strokeWidth="3" fill="none" opacity="0.9" />
         </g>
         
-        {/* Book stack */}
-        <g className="animate-book-stack">
-          <rect x="35" y="60" width="50" height="8" rx="2" fill="#4F46E5" opacity="0.9" />
-          <rect x="30" y="68" width="60" height="8" rx="2" fill="#7C3AED" opacity="0.9" />
-          <rect x="25" y="76" width="70" height="8" rx="2" fill="#EC4899" opacity="0.9" />
-        </g>
-        
-        {/* Sparkle effects */}
-        <circle cx="25" cy="30" r="2" fill="#FFD700" className="animate-twinkle" />
-        <circle cx="95" cy="65" r="2" fill="#FFD700" className="animate-twinkle" style={{animationDelay: '0.3s'}} />
-        <circle cx="40" cy="85" r="2" fill="#FFD700" className="animate-twinkle" style={{animationDelay: '0.6s'}} />
+        {/* Security badge indicators */}
+        <circle cx="30" cy="35" r="4" fill="#10B981" className="animate-pulse" />
+        <circle cx="90" cy="35" r="4" fill="#10B981" className="animate-pulse" style={{animationDelay: '0.5s'}} />
+        <circle cx="45" cy="90" r="4" fill="#10B981" className="animate-pulse" style={{animationDelay: '1s'}} />
+        <circle cx="75" cy="90" r="4" fill="#10B981" className="animate-pulse" style={{animationDelay: '1.5s'}} />
       </svg>
     </div>
   );
@@ -58,40 +59,52 @@ export const WelcomeView = ({
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
     <div ref={ref} className="min-h-screen relative overflow-hidden">
-      {/* Physics Wallah brand colors gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/80 via-white to-purple-50/80 dark:from-orange-950/20 dark:via-gray-900 dark:to-purple-950/20" />
+      {/* Professional banking gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/50 to-cyan-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-cyan-950/30" />
       
-      {/* Floating animated orbs - Physics Wallah colors */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-orange-400/15 dark:bg-orange-500/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-400/15 dark:bg-purple-500/10 rounded-full blur-3xl animate-float-delayed" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-red-400/10 dark:bg-red-500/8 rounded-full blur-3xl animate-pulse" />
+      {/* Floating animated orbs */}
+      <div className="absolute top-20 left-10 w-96 h-96 bg-blue-400/10 dark:bg-blue-500/5 rounded-full blur-3xl animate-float" />
+      <div className="absolute bottom-20 right-10 w-80 h-80 bg-cyan-400/10 dark:bg-cyan-500/5 rounded-full blur-3xl animate-float-delayed" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-teal-400/8 dark:bg-teal-500/4 rounded-full blur-3xl animate-pulse" />
       
-      <section className="relative bg-transparent flex flex-col items-center justify-center text-center min-h-screen px-4 py-12">
+      <section className="relative bg-transparent flex flex-col items-center justify-center text-center min-h-screen px-4 py-12 pb-32">
         <div className="max-w-3xl mx-auto space-y-8">
           <WelcomeImage />
 
           <div className="space-y-4">
-            {/* Main heading with Physics Wallah tagline */}
-            <div className="space-y-2">
-              <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-orange-600 via-red-600 to-purple-600 dark:from-orange-400 dark:via-red-400 dark:to-purple-400 bg-clip-text text-transparent tracking-tight">
-                Physics Wallah
+            {/* Main heading */}
+            <div className="space-y-3">
+              <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 dark:from-blue-400 dark:via-cyan-400 dark:to-teal-400 bg-clip-text text-transparent tracking-tight">
+                SBI Bank
               </h1>
-              <div className="flex items-center justify-center gap-2 text-lg md:text-xl font-bold text-orange-600 dark:text-orange-400">
-                <span className="inline-block w-8 h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></span>
-                <p className="tracking-wide">Padhega India Tab Badhega India</p>
-                <span className="inline-block w-8 h-1 bg-gradient-to-r from-red-500 to-purple-500 rounded-full"></span>
+              <div className="flex items-center justify-center gap-3">
+                <span className="inline-block w-12 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"></span>
+                <p className="text-lg md:text-xl font-bold text-blue-600 dark:text-blue-400 tracking-wide uppercase">
+                  State Bank of India • Fraud Prevention
+                </p>
+                <span className="inline-block w-12 h-1 bg-gradient-to-r from-cyan-500 to-teal-500 rounded-full"></span>
               </div>
             </div>
             
-            <p className="text-foreground/90 max-w-2xl mx-auto pt-2 leading-8 font-medium text-xl md:text-2xl">
-              Talk to our AI counselor about your{' '}
-              <span className="text-orange-600 dark:text-orange-400 font-bold">JEE</span> or{' '}
-              <span className="text-purple-600 dark:text-purple-400 font-bold">NEET</span>{' '}
-              preparation journey
-            </p>
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-950/30 dark:to-orange-950/30 border border-red-200 dark:border-red-800 rounded-2xl p-6 max-w-2xl mx-auto">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-600 dark:text-red-400">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <p className="text-xl md:text-2xl font-bold text-red-700 dark:text-red-400">
+                  Fraud Alert Detected
+                </p>
+              </div>
+              <p className="text-foreground/90 leading-7 font-medium text-lg">
+                We've detected suspicious activity on your account and need to verify with you immediately
+              </p>
+            </div>
 
             <p className="text-muted-foreground max-w-xl mx-auto text-base md:text-lg leading-relaxed">
-              Get personalized guidance on courses, pricing, and exam preparation at India's most affordable coaching platform
+              Our AI fraud prevention system will verify your identity and help secure your account. 
+              This call typically takes 2-3 minutes.
             </p>
           </div>
 
@@ -100,7 +113,7 @@ export const WelcomeView = ({
               variant="primary" 
               size="lg" 
               onClick={onStartCall} 
-              className="w-80 font-bold text-xl py-7 bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 hover:from-orange-600 hover:via-red-600 hover:to-purple-700 shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/60 transition-all duration-300 hover:scale-105 rounded-2xl border-2 border-white/20"
+              className="w-80 font-bold text-xl py-7 bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 hover:from-blue-700 hover:via-cyan-700 hover:to-teal-700 shadow-2xl shadow-blue-500/40 hover:shadow-blue-500/60 transition-all duration-300 hover:scale-105 rounded-2xl border-2 border-white/20"
             >
               <span className="flex items-center gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -110,63 +123,69 @@ export const WelcomeView = ({
               </span>
             </Button>
             
-            {/* Feature highlights */}
+            {/* Security features */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 w-full max-w-3xl">
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-5 border border-orange-200/50 dark:border-orange-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="text-3xl mb-2">📚</div>
-                <h3 className="font-bold text-orange-600 dark:text-orange-400 mb-1">Lakshya & Arjuna</h3>
-                <p className="text-sm text-muted-foreground">Complete JEE/NEET programs</p>
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 border border-blue-200/50 dark:border-blue-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="text-4xl mb-2">🔐</div>
+                <h3 className="font-bold text-blue-600 dark:text-blue-400 mb-1">Multi-Factor</h3>
+                <p className="text-sm text-muted-foreground">Secure verification process</p>
               </div>
               
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-5 border border-purple-200/50 dark:border-purple-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="text-3xl mb-2">₹</div>
-                <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-1">₹3,999/year</h3>
-                <p className="text-sm text-muted-foreground">40x cheaper than Kota</p>
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 border border-cyan-200/50 dark:border-cyan-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="text-4xl mb-2">⚡</div>
+                <h3 className="font-bold text-cyan-600 dark:text-cyan-400 mb-1">Real-Time</h3>
+                <p className="text-sm text-muted-foreground">Instant fraud detection</p>
               </div>
               
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-5 border border-red-200/50 dark:border-red-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="text-3xl mb-2">👨‍🏫</div>
-                <h3 className="font-bold text-red-600 dark:text-red-400 mb-1">Expert Faculty</h3>
-                <p className="text-sm text-muted-foreground">By Alakh Pandey Sir & team</p>
+              <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 border border-teal-200/50 dark:border-teal-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <div className="text-4xl mb-2">🛡️</div>
+                <h3 className="font-bold text-teal-600 dark:text-teal-400 mb-1">Protected</h3>
+                <p className="text-sm text-muted-foreground">Bank-grade security</p>
               </div>
             </div>
 
-            {/* Stats */}
+            {/* Trust indicators */}
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-semibold pt-4">
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-foreground">7M+ Students</span>
+              <div className="flex items-center gap-2 bg-white/60 dark:bg-gray-800/60 px-4 py-2 rounded-full backdrop-blur-sm border border-green-200/50 dark:border-green-800/50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-green-600 dark:text-green-400">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span className="text-foreground">Encrypted Call</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" style={{animationDelay: '0.2s'}} />
-                <span className="text-foreground">IIT/AIIMS Success</span>
+              <div className="flex items-center gap-2 bg-white/60 dark:bg-gray-800/60 px-4 py-2 rounded-full backdrop-blur-sm border border-green-200/50 dark:border-green-800/50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-green-600 dark:text-green-400">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span className="text-foreground">GDPR Compliant</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" style={{animationDelay: '0.4s'}} />
-                <span className="text-foreground">Free YouTube Classes</span>
+              <div className="flex items-center gap-2 bg-white/60 dark:bg-gray-800/60 px-4 py-2 rounded-full backdrop-blur-sm border border-green-200/50 dark:border-green-800/50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-green-600 dark:text-green-400">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span className="text-foreground">AI-Powered</span>
               </div>
+            </div>
+
+            {/* Warning notice */}
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl p-4 max-w-2xl mx-auto mt-6">
+              <p className="text-sm text-amber-800 dark:text-amber-300 leading-relaxed">
+                <strong>⚠️ Important:</strong> We will never ask for your full card number, PIN, or password. 
+                If anyone does, it's a scam. Hang up and call us directly.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       <div className="fixed bottom-8 left-0 flex w-full items-center justify-center px-4 z-10">
-        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl px-8 py-4 border border-orange-200/50 dark:border-orange-800/50 shadow-2xl">
+        <div className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg rounded-2xl px-8 py-4 border border-blue-200/50 dark:border-blue-800/50 shadow-2xl">
           <p className="text-muted-foreground max-w-prose text-sm leading-6 font-medium text-center">
-            Powered by <span className="text-orange-600 dark:text-orange-400 font-bold">Murf Falcon TTS</span> • 
-            The fastest voice AI for education •{' '}
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
-              href="https://www.pw.live"
-              className="text-purple-600 dark:text-purple-400 font-semibold underline hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
-            >
-              Visit Physics Wallah
-            </a>
+            Powered by <span className="text-blue-600 dark:text-blue-400 font-bold">Murf Falcon TTS</span> • 
+            Fastest voice AI for secure banking •{' '}
+            <span className="text-cyan-600 dark:text-cyan-400 font-semibold">24/7 Fraud Protection</span>
           </p>
         </div>
       </div>
     </div>
   );
 };
-
