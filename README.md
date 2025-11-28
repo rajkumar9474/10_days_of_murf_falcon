@@ -170,8 +170,8 @@ Progress Checklist:
 - [x] Day 3: Health & Wellness Voice Companion with daily check-ins, mood tracking, JSON persistence (wellness_log.json), previous session references, wellness-themed UI, browser session video, and LinkedIn post.
 - [x] Day 4: Teach-the-Tutor Active Recall Coach with three learning modes (Learn/Quiz/Teach-Back), mode-specific Murf Falcon voices (Matthew/Alicia/Ken), concept library (Variables, Loops, Functions, Conditionals, Data Types, Lists), mastery tracking with scoring, educational-themed UI, browser session video, and LinkedIn post.
 - [x] Day 5: Physics Wallah SDR Agent with FAQ answering system, natural lead capture (name, class, exam, contact, preparation status, weak subjects, timeline), end-of-call summary with JSON export (backend/KMS/logs/), Physics Wallah-branded UI with gradient animations, browser session video, and LinkedIn post.
-- [ ] Day 6: To be announced.
-- [ ] Day 7: To be announced.
+- [x] Day 6: Fraud Alert Voice Agent with multi-factor authentication (security ID + security question), transaction verification workflow, JSON data persistence (fraud_cases.json), case status management (pending/verified/fraudulent), SBI Bank-branded UI with fraud prevention theme, flexible STT name matching, browser session video, and LinkedIn post.
+- [x] Day 7: QuickMart Express Food Ordering Agent with cart management (add/remove/update items), intelligent recipe ingredient bundling (add_ingredients_for tool), product catalog (catalog.json), recipe mappings (recipes.json), order placement with JSON persistence (backend/data/orders/), QuickMart Express-branded UI with orange/green food theme, browser session video, and LinkedIn post.
 - [ ] Day 8: To be announced.
 - [ ] Day 9: To be announced.
 - [ ] Day 10: To be announced.

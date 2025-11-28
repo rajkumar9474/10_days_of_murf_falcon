@@ -1,0 +1,26 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shopping cart with lightning bolt - Dark mode version -->
+  <defs>
+    <linearGradient id="cartGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff8c42"/>
+      <stop offset="100%" stop-color="#ffa366"/>
+    </linearGradient>
+    <linearGradient id="leafGradientDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#66bb6a"/>
+      <stop offset="100%" stop-color="#81c784"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Shopping cart body -->
+  <path d="M45 35 L50 35 L58 75 L90 75 L95 50 L55 50" stroke="url(#cartGradientDark)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Cart wheels -->
+  <circle cx="62" cy="85" r="5" fill="url(#cartGradientDark)"/>
+  <circle cx="82" cy="85" r="5" fill="url(#cartGradientDark)"/>
+  
+  <!-- Lightning bolt for speed -->
+  <path d="M75 20 L65 45 L72 45 L62 70 L75 45 L68 45 Z" fill="#ffeb3b" stroke="#ff8c42" stroke-width="1.5"/>
+  
+  <!-- Fresh leaf accent -->
+  <path d="M35 25 Q35 15 45 15 Q40 20 40 25 Q40 30 35 25 Z" fill="url(#leafGradientDark)"/>
+</svg>

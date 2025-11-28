@@ -1,0 +1,44 @@
+{
+  "recipes": {
+    "peanut butter sandwich": {
+      "items": ["bread_whole_wheat", "peanut_butter"],
+      "description": "Classic peanut butter sandwich"
+    },
+    "pb sandwich": {
+      "items": ["bread_whole_wheat", "peanut_butter"],
+      "description": "Classic peanut butter sandwich"
+    },
+    "pasta": {
+      "items": ["pasta_penne", "pasta_sauce", "cheese_cheddar"],
+      "description": "Simple pasta with marinara sauce and cheese"
+    },
+    "pasta for two": {
+      "items": ["pasta_penne", "pasta_sauce", "cheese_cheddar"],
+      "description": "Pasta meal for two people"
+    },
+    "greek salad": {
+      "items": ["lettuce", "tomatoes", "cucumber", "olive_oil"],
+      "description": "Fresh Greek salad"
+    },
+    "salad": {
+      "items": ["lettuce", "tomatoes", "cucumber", "olive_oil"],
+      "description": "Fresh vegetable salad"
+    },
+    "breakfast": {
+      "items": ["bread_white", "eggs_brown", "milk_full_cream", "butter"],
+      "description": "Basic breakfast items"
+    },
+    "sandwich ingredients": {
+      "items": ["bread_whole_wheat", "tomatoes", "cucumber", "cheese_cheddar"],
+      "description": "Ingredients for a vegetable sandwich"
+    },
+    "pizza night": {
+      "items": ["pizza_margherita", "chips_classic", "juice_orange"],
+      "description": "Pizza night combo"
+    },
+    "movie snacks": {
+      "items": ["chips_classic", "cookies_chocolate", "juice_orange"],
+      "description": "Snacks for movie time"
+    }
+  }
+}

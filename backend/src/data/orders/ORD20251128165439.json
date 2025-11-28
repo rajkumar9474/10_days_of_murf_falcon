@@ -1,0 +1,51 @@
+{
+  "order_id": "ORD20251128165439",
+  "customer_name": "Raj Kumar",
+  "timestamp": "2025-11-28T16:54:39.794939",
+  "items": [
+    {
+      "item_id": "bread_white",
+      "name": "White Bread",
+      "quantity": 1,
+      "price_per_unit": 40,
+      "total": 40
+    },
+    {
+      "item_id": "eggs_brown",
+      "name": "Brown Eggs",
+      "quantity": 1,
+      "price_per_unit": 90,
+      "total": 90
+    },
+    {
+      "item_id": "milk_full_cream",
+      "name": "Full Cream Milk",
+      "quantity": 1,
+      "price_per_unit": 60,
+      "total": 60
+    },
+    {
+      "item_id": "butter",
+      "name": "Butter",
+      "quantity": 2,
+      "price_per_unit": 60,
+      "total": 120
+    },
+    {
+      "item_id": "pizza_margherita",
+      "name": "Margherita Pizza",
+      "quantity": 1,
+      "price_per_unit": 350,
+      "total": 350
+    },
+    {
+      "item_id": "cookies_chocolate",
+      "name": "Chocolate Chip Cookies",
+      "quantity": 2,
+      "price_per_unit": 30,
+      "total": 60
+    }
+  ],
+  "total": 720,
+  "status": "received"
+}
