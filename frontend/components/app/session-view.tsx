@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import type { AppConfig } from '@/app-config';
 import { ChatTranscript } from '@/components/app/chat-transcript';
+import { CharacterSheet } from '@/components/app/character-sheet';
 import { PreConnectMessage } from '@/components/app/preconnect-message';
 import { TileLayout } from '@/components/app/tile-layout';
 import {
@@ -36,7 +37,7 @@ const BOTTOM_VIEW_MOTION_PROPS = {
   transition: {
     duration: 0.3,
     delay: 0.5,
-    ease: 'easeOut',
+    ease: [0, 0, 0.2, 1] as [number, number, number, number], // easeOut cubic-bezier
   },
 };
 
@@ -92,6 +93,9 @@ export const SessionView = ({
 
   return (
     <section className="bg-background relative z-10 h-full w-full overflow-hidden" {...props}>
+      {/* Character Sheet */}
+      <CharacterSheet />
+
       {/* Chat Transcript */}
       <div
         className={cn(
@@ -101,11 +105,12 @@ export const SessionView = ({
       >
         <Fade top className="absolute inset-x-4 top-0 h-40" />
         <ScrollArea ref={scrollAreaRef} className="px-4 pt-40 pb-[150px] md:px-6 md:pb-[180px]">
-          <ChatTranscript
-            hidden={!chatOpen}
-            messages={messages}
-            className="mx-auto max-w-2xl space-y-3 transition-opacity duration-300 ease-out"
-          />
+          <div className="mx-auto max-w-2xl space-y-3 transition-opacity duration-300 ease-out">
+            <ChatTranscript
+              hidden={!chatOpen}
+              messages={messages}
+            />
+          </div>
         </ScrollArea>
       </div>
 

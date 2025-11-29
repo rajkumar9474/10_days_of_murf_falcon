@@ -29,6 +29,9 @@ export const ChatEntry = ({
   const time = new Date(timestamp);
   const title = time.toLocaleTimeString(locale, { timeStyle: 'full' });
 
+  // GM messages are remote, player messages are local
+  const isGM = messageOrigin === 'remote';
+
   return (
     <li
       title={title}
@@ -38,11 +41,11 @@ export const ChatEntry = ({
     >
       <header
         className={cn(
-          'text-muted-foreground flex items-center gap-2 text-sm',
+          'text-muted-foreground flex items-center gap-2 text-sm font-semibold',
           messageOrigin === 'local' ? 'flex-row-reverse' : 'text-left'
         )}
       >
-        {name && <strong>{name}</strong>}
+        {name && <strong>{isGM ? '🎲 Game Master' : '🗡️ You'}</strong>}
         <span className="font-mono text-xs opacity-0 transition-opacity ease-linear group-hover:opacity-100">
           {hasBeenEdited && '*'}
           {time.toLocaleTimeString(locale, { timeStyle: 'short' })}
@@ -50,8 +53,8 @@ export const ChatEntry = ({
       </header>
       <span
         className={cn(
-          'max-w-4/5 rounded-[20px]',
-          messageOrigin === 'local' ? 'bg-muted ml-auto p-2' : 'mr-auto'
+          'max-w-4/5',
+          isGM ? 'gm-message mr-auto' : 'player-message ml-auto'
         )}
       >
         {message}

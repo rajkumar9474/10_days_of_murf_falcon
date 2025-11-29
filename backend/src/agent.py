@@ -1,10 +1,7 @@
-"""Day 4 Teach-the-Tutor Agent - Active recall coaching with three modes."""
-
-import json
 import logging
-import os
-from datetime import datetime
-from pathlib import Path
+import random
+import json
+from typing import Annotated
 
 from dotenv import load_dotenv
 from livekit.agents import (
@@ -14,275 +11,269 @@ from livekit.agents import (
     JobProcess,
     MetricsCollectedEvent,
     RoomInputOptions,
-    RunContext,
-    ToolError,
     WorkerOptions,
     cli,
-    function_tool,
     metrics,
     tokenize,
+    function_tool,
+    RunContext,
 )
-from livekit.plugins import silero, murf, google, deepgram, noise_cancellation
+from livekit.plugins import murf, silero, google, deepgram, noise_cancellation
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 
 logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
-# Load FAQ data
-FAQ_FILE = Path(__file__).parent / "company_faq.json"
-with open(FAQ_FILE, 'r') as f:
-    COMPANY_DATA = json.load(f)
+
+class GameState:
+    """Tracks the D&D game world state"""
+
+    def __init__(self):
+        self.game_started = False
+        self.player = {
+            "name": "Adventurer",
+            "class": "Wanderer",
+            "hp": 20,
+            "max_hp": 20,
+            "inventory": ["rusty sword", "leather pouch with 10 gold coins"],
+            "traits": ["curious", "brave"],
+        }
+        self.location = {
+            "name": "The Crossroads Tavern",
+            "description": "A warm, bustling tavern at the edge of civilization",
+            "paths": [
+                "north to the Dark Forest",
+                "east to the Mountain Pass",
+                "south to the Coastal Village",
+            ],
+        }
+        self.events = []
+        self.quests = []
+
+    def to_dict(self):
+        return {
+            "game_started": self.game_started,
+            "player": self.player,
+            "location": self.location,
+            "events": self.events,
+            "quests": self.quests,
+        }
+
+    def set_player_name(self, name: str):
+        self.player["name"] = name
+
+    def start_game(self):
+        self.game_started = True
+
+    def add_event(self, event: str):
+        self.events.append(event)
+
+    def add_item(self, item: str):
+        self.player["inventory"].append(item)
+
+    def remove_item(self, item: str):
+        if item in self.player["inventory"]:
+            self.player["inventory"].remove(item)
+            return True
+        return False
+
+    def update_hp(self, change: int):
+        self.player["hp"] = max(
+            0, min(self.player["max_hp"], self.player["hp"] + change)
+        )
 
 
 class Assistant(Agent):
     def __init__(self) -> None:
-        # Initialize lead data for this session
-        self.lead_data = {
-            "name": None,
-            "student_class": None,  # Class 11, 12, or Dropper
-            "target_exam": None,  # JEE or NEET
-            "contact": None,  # Phone or email
-            "current_preparation": None,  # Taking coaching, self-study, etc.
-            "weak_subjects": None,
-            "timeline": None  # When planning to enroll
-        }
         super().__init__(
-            instructions=f"""You are Harsha, an enthusiastic and helpful Sales Development Representative (SDR) for {COMPANY_DATA['company']['name']}.
+            instructions="""
+You are a Game Master for 'The Dragon's Quest' - a fantasy adventure with dragons, magic, and mysteries.
 
-Company Overview: {COMPANY_DATA['company']['description']}
+GREETING PHASE (when game hasn't started):
+- Warmly greet the player
+- Introduce yourself as the Game Master
+- Ask for the player's name
+- Welcome them to 'The Dragon's Quest'
+- Ask if they're ready to begin the adventure
+- Wait for their confirmation before starting the story
 
-Your role:
-- Greet visitors warmly and professionally - introduce yourself as Harsha from Physics Wallah
-- ALWAYS ask for their name early in the conversation - this is mandatory , wait for their response before proceeding
-- Ask what they are preparing for (JEE, NEET, or both) and how you can help them
-- Understand their needs, challenges, and exam preparation goals
-- Answer questions about our products, pricing, and services using the available tools
-- Naturally collect important information about the lead during the conversation
-- Keep the conversation focused and engaging
-- Be curious, friendly, and helpful
+WORLD SETTING:
+- Medieval fantasy world with dragons, magic, elves, and dwarves
+- Dark forests, tall mountains, old ruins, and magical creatures
+- Magic exists but is rare and dangerous
+- The world has both wonder and danger
 
-Important - You MUST collect these details during the conversation:
-1. Student's name (ask early)
-2. Current class (Class 11, Class 12, or Dropper)
-3. Target exam (JEE or NEET)
-4. Contact information - phone number OR email (ask for the best way to reach them)
-5. Current preparation approach
-6. Weak subjects if any
-7. Timeline for enrollment
+YOUR JOB AS GAME MASTER:
+- Describe scenes in a clear and exciting way
+- Tell the player what happens after their actions
+- Control all characters, monsters, and the world
+- Remember everything that happens in the story
+- Make the story exciting and fun
 
-Remember:
-- You are speaking via voice, so keep responses conversational and concise
-- Avoid complex formatting, emojis, asterisks, or symbols
-- Use the FAQ tool to answer specific questions about our company, products, and pricing
-- Use the lead capture tools to store information as you learn it during natural conversation
-- Don't ask for all information at once - gather it naturally throughout the conversation
-- When asking for contact, ask "What's the best way to reach you - phone number or email?" and save whatever they provide
-- When the user indicates they are done, use the end_call_summary tool to save all information
+HOW TO TELL THE STORY:
+- Use simple, clear language that's easy to understand
+- Keep your responses short
+- Describe what the player sees, hears, and smells
+- Add some humor when it fits
+- NO emojis, asterisks, or special symbols
 
-Key products: {', '.join([p['name'] for p in COMPANY_DATA['products']])}
+GAME RULES:
+1. Describe what's happening now
+2. Give the player a choice or challenge
+3. ALWAYS ask "What do you do?" or something similar at the end
+4. Continue the story based on what the player says
+
+IMPORTANT:
+- Remember character names, places, and past choices
+- Keep track of items, health, and story events
+- Use dice rolls when the player tries risky actions
+- Keep the story moving with clear choices
+- Create interesting characters and places
+- Build up to exciting moments
+
+EXTRA INSTRUCTION:
+Whenever you ask "What do you do?" or a similar prompt, always suggest 2-4 possible actions the player can take, based on the current scene. For example: "You can talk to the bartender, look around the tavern, check your inventory, or try to leave." Make sure these options are relevant to the story and location, but also allow the player to choose something else if they wish.
+
+Use simple words and short sentences. Make it easy to understand but still exciting!
+
+Once the game starts, the adventure begins at a tavern. Guide the player into a fun quest!
 """,
         )
+        self.game_state = GameState()
 
     @function_tool
-    async def search_faq(self, context: RunContext, question: str):
-        """Search the company FAQ to answer questions about products, services, pricing, or company information.
-        
-        Use this tool when the user asks about:
-        - What the company does
-        - Product features and capabilities
-        - Pricing and fees
-        - How to get started
-        - Who the service is for
-        - Any other company or product related questions
-        
-        Args:
-            question: The user's question about the company, products, or services
+    async def set_player_name_and_start(
+        self,
+        context: RunContext,
+        player_name: Annotated[str, "The name the player chose for their character"],
+    ) -> str:
+        """Set the player's name and start the game.
+
+        Use this when the player tells you their name during the greeting phase.
+        After calling this, you can begin the adventure.
         """
-        logger.info(f"Searching FAQ for: {question}")
-        
-        # Simple keyword matching - find the most relevant FAQ entry
-        question_lower = question.lower()
-        
-        # Check pricing if that's what they're asking about
-        if any(word in question_lower for word in ['price', 'cost', 'fee', 'charge', 'free', 'afford', 'cheap', 'expensive']):
-            pricing_info = COMPANY_DATA['pricing']
-            return f"Pricing: {pricing_info['lakshya_2year']}. {pricing_info['arjuna_1year']}. Test series: {pricing_info['test_series']}. We also have {pricing_info['youtube_free']}. {pricing_info['comparison']}."
-        
-        # Search through FAQ entries
-        best_match = None
-        best_score = 0
-        
-        for faq in COMPANY_DATA['faq']:
-            # Simple scoring based on keyword overlap
-            faq_words = set(faq['question'].lower().split() + faq['answer'].lower().split())
-            question_words = set(question_lower.split())
-            overlap = len(faq_words.intersection(question_words))
-            
-            if overlap > best_score:
-                best_score = overlap
-                best_match = faq
-        
-        if best_match and best_score > 0:
-            return best_match['answer']
-        else:
-            # Return general company info
-            return COMPANY_DATA['company']['description']
-    
+        self.game_state.set_player_name(player_name)
+        self.game_state.start_game()
+        return f"Player name set to {player_name}. Game is now starting!"
+
     @function_tool
-    async def save_lead_name(self, context: RunContext, name: str):
-        """Save the lead's name when they mention it during conversation.
-        
-        Args:
-            name: The lead's full name
+    async def get_character_status(self, context: RunContext) -> str:
+        """Get the current character status including HP, inventory, and traits.
+
+        Use this when the player asks about their character, inventory, or health.
         """
-        logger.info(f"Saving lead name: {name}")
-        self.lead_data['name'] = name
-        return f"Got it, {name}. Nice to meet you!"
-    
+        state = self.game_state.player
+        inventory_list = (
+            ", ".join(state["inventory"]) if state["inventory"] else "nothing"
+        )
+
+        return f"""Character: {state["name"]} the {state["class"]}
+Health: {state["hp"]}/{state["max_hp"]} HP
+Inventory: {inventory_list}
+Traits: {", ".join(state["traits"])}"""
+
     @function_tool
-    async def save_student_class(self, context: RunContext, student_class: str):
-        """Save the student's current class or status when they mention it.
-        
+    async def roll_dice(
+        self,
+        context: RunContext,
+        dice_type: Annotated[int, "Type of dice to roll (6, 10, 20)"] = 20,
+        modifier: Annotated[int, "Modifier to add to the roll"] = 0,
+        difficulty: Annotated[int, "Difficulty class for the check"] = 10,
+    ) -> str:
+        """Roll dice for skill checks, attacks, or other random events.
+
         Args:
-            student_class: The student's current class (e.g., Class 11, Class 12, Dropper, 12th pass)
+            dice_type: The type of dice (6, 10, or 20)
+            modifier: Bonus or penalty to add
+            difficulty: The target number to beat
         """
-        logger.info(f"Saving student class: {student_class}")
-        self.lead_data['student_class'] = student_class
-        return f"Got it, you're in {student_class}. Perfect!"
-    
+        roll = random.randint(1, dice_type)
+        total = roll + modifier
+        success = total >= difficulty
+
+        result = f"Rolling d{dice_type}... You rolled {roll}"
+        if modifier != 0:
+            result += f" + {modifier} = {total}"
+        result += f" (DC {difficulty}): {'SUCCESS!' if success else 'FAILURE'}"
+
+        logger.info(f"Dice roll: {result}")
+        return result
+
     @function_tool
-    async def save_contact(self, context: RunContext, contact: str):
-        """Save the student's contact information when they provide it.
-        
+    async def update_inventory(
+        self,
+        context: RunContext,
+        action: Annotated[str, "Either 'add' or 'remove'"],
+        item: Annotated[str, "The item to add or remove"],
+    ) -> str:
+        """Update the player's inventory by adding or removing items.
+
         Args:
-            contact: The student's phone number or email address
+            action: Either 'add' or 'remove'
+            item: The item name
         """
-        logger.info(f"Saving contact: {contact}")
-        self.lead_data['contact'] = contact
-        return "Perfect, I have your contact details."
-    
-    @function_tool
-    async def save_target_exam(self, context: RunContext, target_exam: str):
-        """Save the student's target exam when they mention it.
-        
-        Args:
-            target_exam: The exam student is preparing for (e.g., JEE Main, JEE Advanced, NEET, Both JEE and NEET)
-        """
-        logger.info(f"Saving target exam: {target_exam}")
-        self.lead_data['target_exam'] = target_exam
-        return f"Excellent! So you're preparing for {target_exam}. That's great!"
-    
-    @function_tool
-    async def save_current_preparation(self, context: RunContext, current_preparation: str):
-        """Save information about the student's current preparation status.
-        
-        Args:
-            current_preparation: How student is currently preparing (e.g., taking coaching, self-study, school only, dropped year)
-        """
-        logger.info(f"Saving current preparation: {current_preparation}")
-        self.lead_data['current_preparation'] = current_preparation
-        return "I understand. I've noted your current preparation approach."
-    
-    @function_tool
-    async def save_weak_subjects(self, context: RunContext, weak_subjects: str):
-        """Save information about subjects where the student needs help.
-        
-        Args:
-            weak_subjects: Subjects student struggles with (e.g., Physics, Chemistry, Mathematics, Biology, specific topics)
-        """
-        logger.info(f"Saving weak subjects: {weak_subjects}")
-        self.lead_data['weak_subjects'] = weak_subjects
-        return "Don't worry, our teachers are excellent at making difficult topics easy to understand!"
-    
-    @function_tool
-    async def save_timeline(self, context: RunContext, timeline: str):
-        """Save when the student plans to enroll or start preparation.
-        
-        Args:
-            timeline: When they plan to start (e.g., immediately, next week, next month, after exams, just exploring)
-        """
-        logger.info(f"Saving timeline: {timeline}")
-        self.lead_data['timeline'] = timeline
-        return "Great! I've noted when you're planning to start."
-    
-    @function_tool
-    async def end_call_summary(self, context: RunContext):
-        """Generate and save the final lead summary when the call is ending.
-        
-        Use this when the user indicates they are done, finished, or ready to end the call.
-        This will create a summary of all collected information.
-        """
-        logger.info("Generating end-of-call summary")
-        
-        # Save to JSON file
-        output_dir = Path(__file__).parent.parent / "KMS" / "logs"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_file = output_dir / f"lead_{timestamp}.json"
-        
-        summary_data = {
-            "timestamp": datetime.now().isoformat(),
-            "lead_info": self.lead_data.copy(),
-            "company": COMPANY_DATA['company']['name']
-        }
-        
-        with open(output_file, 'w') as f:
-            json.dump(summary_data, f, indent=2)
-        
-        logger.info(f"Lead data saved to {output_file}")
-        
-        # Generate verbal summary
-        summary_parts = []
-        if self.lead_data['name']:
-            summary_parts.append(f"We spoke with {self.lead_data['name']}")
-        if self.lead_data['student_class']:
-            summary_parts.append(f"who is in {self.lead_data['student_class']}")
-        if self.lead_data['target_exam']:
-            summary_parts.append(f"preparing for {self.lead_data['target_exam']}")
-        if self.lead_data['current_preparation']:
-            summary_parts.append(f"Currently {self.lead_data['current_preparation']}")
-        if self.lead_data['weak_subjects']:
-            summary_parts.append(f"Needs help with {self.lead_data['weak_subjects']}")
-        if self.lead_data['timeline']:
-            summary_parts.append(f"Planning to start: {self.lead_data['timeline']}")
-        
-        verbal_summary = ". ".join(summary_parts) if summary_parts else "We had a great conversation about your exam preparation"
-        
-        return f"Thank you so much for your time today! {verbal_summary}. I've saved all your information and our academic counselor will reach out to you soon to help you with the best batch and study plan. All the best for your preparation! Padhega India Tab Badhega India!"
+        if action == "add":
+            self.game_state.add_item(item)
+            return f"Added {item} to inventory"
+        elif action == "remove":
+            if self.game_state.remove_item(item):
+                return f"Removed {item} from inventory"
+            else:
+                return f"{item} not found in inventory"
+        return "Invalid action"
 
 
 def prewarm(proc: JobProcess):
-    """Prewarm models and load tutor content."""
     proc.userdata["vad"] = silero.VAD.load()
-    # Preload FAQ data
-    logger.info(f"Preloaded FAQ data for {COMPANY_DATA['company']['name']}")
 
 
 async def entrypoint(ctx: JobContext):
-    """Entry point for Day 4 active recall coach."""
+    # Logging setup
+    # Add any other context you want in all log entries here
     ctx.log_context_fields = {
         "room": ctx.room.name,
     }
 
-    content = ctx.proc.userdata.get("tutor_content", TutorContentLibrary.from_env())
-    state = TutorSessionState(current_concept_id=content.list_concepts()[0].id)
-    userdata = Userdata(state=state, content=content)
-
-    session = AgentSession[Userdata](
-        userdata=userdata,
+    # Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
+    session = AgentSession(
+        # Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
+        # See all available models at https://docs.livekit.io/agents/models/stt/
         stt=deepgram.STT(model="nova-3"),
-        llm=google.LLM(model="gemini-2.5-flash"),
-        tts=murf.TTS(
-            voice=VOICE_PERSONAS["learn"]["voice"],
-            style=VOICE_PERSONAS["learn"]["style"],
+        # A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
+        # See all available models at https://docs.livekit.io/agents/models/llm/
+        llm=google.LLM(
+            model="gemini-2.5-flash",
         ),
+        # Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
+        # See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
+        tts=murf.TTS(
+            voice="en-US-matthew",
+            style="Conversation",
+            tokenizer=tokenize.basic.SentenceTokenizer(min_sentence_len=2),
+            text_pacing=True,
+        ),
+        # VAD and turn detection are used to determine when the user is speaking and when the agent should respond
+        # See more at https://docs.livekit.io/agents/build/turns
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
+        # allow the LLM to generate a response while waiting for the end of turn
+        # See more at https://docs.livekit.io/agents/build/audio/#preemptive-generation
         preemptive_generation=True,
     )
 
+    # To use a realtime model instead of a voice pipeline, use the following session setup instead.
+    # (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
+    # 1. Install livekit-agents[openai]
+    # 2. Set OPENAI_API_KEY in .env.local
+    # 3. Add `from livekit.plugins import openai` to the top of this file
+    # 4. Use the following session setup instead of the version above
+    # session = AgentSession(
+    #     llm=openai.realtime.RealtimeModel(voice="marin")
+    # )
+
+    # Metrics collection, to measure pipeline performance
+    # For more information, see https://docs.livekit.io/agents/build/metrics/
     usage_collector = metrics.UsageCollector()
 
     @session.on("metrics_collected")
@@ -290,36 +281,32 @@ async def entrypoint(ctx: JobContext):
         metrics.log_metrics(ev.metrics)
         usage_collector.collect(ev.metrics)
 
-    @session.on("user_speech_committed")
-    def _on_user_speech(ev):
-        logger.info(f"✅ User speech: {ev.text}")
-
-    @session.on("agent_speech_committed")
-    def _on_agent_speech(ev):
-        logger.info(f"✅ Agent speech: {ev.text}")
-
-    @session.on("error")
-    def _on_error(ev):
-        logger.error(f"❌ Session error: {ev}")
-
     async def log_usage():
         summary = usage_collector.get_summary()
         logger.info(f"Usage: {summary}")
 
     ctx.add_shutdown_callback(log_usage)
 
-    agent = TeachTheTutorAgent(userdata=userdata)
+    # # Add a virtual avatar to the session, if desired
+    # # For other providers, see https://docs.livekit.io/agents/models/avatar/
+    # avatar = hedra.AvatarSession(
+    #   avatar_id="...",  # See https://docs.livekit.io/agents/models/avatar/plugins/hedra
+    # )
+    # # Start the avatar and wait for it to join
+    # await avatar.start(session, room=ctx.room)
 
+    # Start the session, which initializes the voice pipeline and warms up the models
     await session.start(
-        agent=agent,
+        agent=Assistant(),
         room=ctx.room,
         room_input_options=RoomInputOptions(
+            # For telephony applications, use `BVCTelephony` for best results
             noise_cancellation=noise_cancellation.BVC(),
         ),
     )
 
+    # Join the room and connect to the user
     await ctx.connect()
-    logger.info("Day 4 Teach-the-Tutor agent is live and listening.")
 
 
 if __name__ == "__main__":

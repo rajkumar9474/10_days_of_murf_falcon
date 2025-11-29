@@ -36,6 +36,16 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Fantasy Theme Colors */
+  --fantasy-parchment: #f4e8d0;
+  --fantasy-parchment-dark: #d4c4a8;
+  --fantasy-gold: #d4af37;
+  --fantasy-gold-dark: #b8941f;
+  --fantasy-scroll: #e8dcc0;
+  --fantasy-ink: #2c1810;
+  --fantasy-purple: #4b0082;
+  --fantasy-emerald: #50c878;
 }
 
 .dark {
@@ -70,6 +80,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.439 0 0);
+  
+  /* Fantasy Theme Colors - Dark Mode */
+  --fantasy-parchment: #3a3428;
+  --fantasy-parchment-dark: #2a2418;
+  --fantasy-gold: #d4af37;
+  --fantasy-gold-dark: #b8941f;
+  --fantasy-scroll: #4a4438;
+  --fantasy-ink: #e8dcc0;
+  --fantasy-purple: #9370db;
+  --fantasy-emerald: #50c878;
 }
 
 @theme inline {
@@ -119,6 +139,39 @@
   }
   body {
     @apply bg-background text-foreground;
+    background: radial-gradient(ellipse at top, rgba(20, 15, 30, 0.95), rgba(10, 8, 15, 1)),
+                linear-gradient(180deg, #0a080f 0%, #1a1520 50%, #0f0d15 100%);
+    background-attachment: fixed;
+    position: relative;
+  }
+  
+  /* Atmospheric overlay with mystical colors */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(139, 69, 19, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(75, 0, 130, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  /* Subtle noise texture for atmosphere */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 1;
   }
 }
 
@@ -158,155 +211,164 @@
       background-position: 250% 0;
     }
   }
-
-  /* Educational-themed animations */
-  .animate-book-flip {
-    animation: book-flip 3s ease-in-out infinite;
+  
+  /* Fantasy D&D Theme Styles - Enhanced */
+  .gm-message {
+    background: linear-gradient(135deg, var(--fantasy-parchment) 0%, var(--fantasy-parchment-dark) 100%);
+    border: 2px solid var(--fantasy-gold);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 
+      0 8px 16px -4px rgba(0, 0, 0, 0.3),
+      0 4px 8px -2px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--fantasy-ink);
+    backdrop-filter: blur(8px);
+    animation: gm-message-appear 0.5s ease-out;
   }
-
-  @keyframes book-flip {
+  
+  .gm-message::before {
+    content: '⚔️';
+    position: absolute;
+    top: -14px;
+    left: 16px;
+    background: linear-gradient(135deg, var(--fantasy-gold) 0%, var(--fantasy-gold-dark) 100%);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+  }
+  
+  /* Parchment texture effect */
+  .gm-message::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='paper'%3E%3CfeTurbulence baseFrequency='0.04' numOctaves='5' seed='2'/%3E%3CfeColorMatrix values='0 0 0 0 0, 0 0 0 0 0, 0 0 0 0 0, 0 0 0 -1.5 1.5'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23paper)' opacity='0.08'/%3E%3C/svg%3E");
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  
+  .player-message {
+    background: linear-gradient(135deg, var(--fantasy-scroll) 0%, rgba(232, 220, 192, 0.9) 100%);
+    border: 1.5px solid var(--fantasy-gold-dark);
+    border-radius: 20px;
+    padding: 0.875rem 1.25rem;
+    font-size: 0.95rem;
+    color: var(--fantasy-ink);
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    animation: player-message-appear 0.3s ease-out;
+  }
+  
+  .character-panel {
+    background: linear-gradient(135deg, var(--fantasy-parchment-dark) 0%, rgba(212, 196, 168, 0.95) 100%);
+    border: 2px solid var(--fantasy-gold);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 
+      0 12px 24px -6px rgba(0, 0, 0, 0.4),
+      0 6px 12px -3px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .character-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      var(--fantasy-gold) 50%, 
+      transparent 100%);
+    opacity: 0.6;
+  }
+  
+  .dice-roll {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--fantasy-gold) 0%, var(--fantasy-gold-dark) 100%);
+    color: var(--fantasy-ink);
+    padding: 0.375rem 1rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    box-shadow: 
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    animation: dice-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+  }
+  
+  @keyframes dice-bounce {
     0%, 100% {
-      transform: rotateY(0deg);
-    }
-    50% {
-      transform: rotateY(5deg);
-    }
-  }
-
-  .animate-check-draw {
-    animation: check-draw 2s ease-in-out infinite;
-  }
-
-  @keyframes check-draw {
-    0% {
-      stroke-dasharray: 100;
-      stroke-dashoffset: 100;
-      opacity: 0.3;
-    }
-    50% {
-      stroke-dasharray: 100;
-      stroke-dashoffset: 0;
-      opacity: 0.8;
-    }
-    100% {
-      stroke-dasharray: 100;
-      stroke-dashoffset: 100;
-      opacity: 0.3;
-    }
-  }
-
-  .animate-float {
-    animation: float 8s ease-in-out infinite;
-  }
-
-  .animate-float-delayed {
-    animation: float 8s ease-in-out infinite;
-    animation-delay: 2s;
-  }
-
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0) translateX(0);
+      transform: translateY(0) rotate(0deg);
     }
     25% {
-      transform: translateY(-20px) translateX(10px);
+      transform: translateY(-12px) rotate(-5deg);
     }
     50% {
-      transform: translateY(-10px) translateX(-10px);
+      transform: translateY(-16px) rotate(5deg);
     }
     75% {
-      transform: translateY(-30px) translateX(5px);
+      transform: translateY(-8px) rotate(-3deg);
     }
   }
-
-  .animate-pulse-gentle {
-    animation: pulse-gentle 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse-gentle {
-    0%, 100% {
+  
+  @keyframes gm-message-appear {
+    0% {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    100% {
       opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.9;
-      transform: scale(1.02);
+      transform: translateY(0) scale(1);
     }
   }
-
-  .animate-heartbeat {
-    animation: heartbeat 1.5s ease-in-out infinite;
-    transform-origin: center;
-  }
-
-  @keyframes heartbeat {
-    0%, 100% {
-      stroke-dasharray: 100;
-      stroke-dashoffset: 100;
+  
+  @keyframes player-message-appear {
+    0% {
+      opacity: 0;
+      transform: translateX(20px) scale(0.95);
     }
-    50% {
-      stroke-dasharray: 100;
-      stroke-dashoffset: 0;
-    }
-  }
-
-  /* Physics Wallah themed animations */
-  .animate-bounce-gentle {
-    animation: bounce-gentle 2s ease-in-out infinite;
-  }
-
-  @keyframes bounce-gentle {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  .animate-swing {
-    animation: swing 1.5s ease-in-out infinite;
-    transform-origin: top center;
-  }
-
-  @keyframes swing {
-    0%, 100% {
-      transform: rotate(-5deg);
-    }
-    50% {
-      transform: rotate(5deg);
-    }
-  }
-
-  .animate-book-stack {
-    animation: book-stack 3s ease-in-out infinite;
-  }
-
-  @keyframes book-stack {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    33% {
-      transform: translateY(-2px);
-    }
-    66% {
-      transform: translateY(-4px);
-    }
-  }
-
-  .animate-twinkle {
-    animation: twinkle 2s ease-in-out infinite;
-  }
-
-  @keyframes twinkle {
-    0%, 100% {
-      opacity: 0.3;
-      transform: scale(1);
-    }
-    50% {
+    100% {
       opacity: 1;
-      transform: scale(1.5);
+      transform: translateX(0) scale(1);
+    }
+  }
+  
+  /* Glowing effect for interactive elements */
+  .fantasy-glow {
+    box-shadow: 
+      0 0 20px rgba(212, 175, 55, 0.3),
+      0 0 40px rgba(212, 175, 55, 0.1);
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 
+        0 0 20px rgba(212, 175, 55, 0.3),
+        0 0 40px rgba(212, 175, 55, 0.1);
+    }
+    50% {
+      box-shadow: 
+        0 0 30px rgba(212, 175, 55, 0.4),
+        0 0 60px rgba(212, 175, 55, 0.2);
     }
   }
 }
-

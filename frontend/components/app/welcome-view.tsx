@@ -1,46 +1,64 @@
-import { Button } from '@/components/livekit/button';
+'use client';
 
-function WelcomeImage() {
+import { Button } from '@/components/livekit/button';
+import { useEffect, useState } from 'react';
+
+function DragonIcon() {
   return (
-    <div className="relative">
-      {/* Animated gradient background circle */}
-      <div className="absolute -inset-12 bg-gradient-to-br from-orange-400/20 via-red-400/20 to-yellow-400/20 rounded-full blur-3xl animate-pulse" />
-      
-      {/* Physics Wallah Logo-inspired icon */}
-      <svg
-        width="120"
-        height="120"
-        viewBox="0 0 120 120"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="relative mb-6"
-      >
-        {/* Graduation cap */}
-        <g className="animate-bounce-gentle">
-          {/* Cap top */}
-          <path
-            d="M60 25 L20 40 L60 55 L100 40 Z"
-            fill="#FF6B35"
-            className="drop-shadow-lg"
-          />
-          {/* Cap board */}
-          <rect x="15" y="40" width="90" height="4" rx="2" fill="#FF6B35" opacity="0.8" />
-          {/* Cap tassel */}
-          <circle cx="102" cy="35" r="3" fill="#FFD700" className="animate-swing" />
-          <line x1="102" y1="38" x2="102" y2="48" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" />
-        </g>
-        
-        {/* Book stack */}
-        <g className="animate-book-stack">
-          <rect x="35" y="60" width="50" height="8" rx="2" fill="#4F46E5" opacity="0.9" />
-          <rect x="30" y="68" width="60" height="8" rx="2" fill="#7C3AED" opacity="0.9" />
-          <rect x="25" y="76" width="70" height="8" rx="2" fill="#EC4899" opacity="0.9" />
-        </g>
-        
-        {/* Sparkle effects */}
-        <circle cx="25" cy="30" r="2" fill="#FFD700" className="animate-twinkle" />
-        <circle cx="95" cy="65" r="2" fill="#FFD700" className="animate-twinkle" style={{animationDelay: '0.3s'}} />
-        <circle cx="40" cy="85" r="2" fill="#FFD700" className="animate-twinkle" style={{animationDelay: '0.6s'}} />
+    <svg
+      width="120"
+      height="120"
+      viewBox="0 0 80 80"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="mb-8 size-28 md:size-32 text-amber-400 drop-shadow-[0_0_30px_rgba(251,191,36,0.8)] animate-pulse"
+      style={{
+        filter: 'drop-shadow(0 0 40px rgba(251, 191, 36, 0.6)) drop-shadow(0 0 60px rgba(251, 191, 36, 0.3))',
+        animation: 'float 6s ease-in-out infinite'
+      }}
+    >
+      <path
+        d="M40 10C35 10 30 12 26 16C22 20 20 25 20 30C20 32 20.5 34 21 36L15 42C13 44 13 47 15 49L19 53L15 57C13 59 13 62 15 64L21 70C23 72 26 72 28 70L32 66L36 70C38 72 41 72 43 70L49 64C51 62 51 59 49 57L45 53L49 49C51 47 51 44 49 42L43 36C43.5 34 44 32 44 30C44 25 42 20 38 16C34 12 29 10 24 10H40ZM40 20C42 20 44 21 45 23C46 25 47 27 47 30C47 33 46 35 45 37C44 39 42 40 40 40C38 40 36 39 35 37C34 35 33 33 33 30C33 27 34 25 35 23C36 21 38 20 40 20ZM28 28C29.1 28 30 28.9 30 30C30 31.1 29.1 32 28 32C26.9 32 26 31.1 26 30C26 28.9 26.9 28 28 28ZM52 28C53.1 28 54 28.9 54 30C54 31.1 53.1 32 52 32C50.9 32 50 31.1 50 30C50 28.9 50.9 28 52 28Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+
+// Floating particle component
+function FloatingParticle({ delay, duration, x, y }: { delay: number; duration: number; x: string; y: string }) {
+  return (
+    <div
+      className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
+      style={{
+        left: x,
+        top: y,
+        animation: `float-particle ${duration}s ease-in-out ${delay}s infinite`,
+        boxShadow: '0 0 10px rgba(251, 191, 36, 0.5)'
+      }}
+    />
+  );
+}
+
+// Decorative corner ornament
+function CornerOrnament({ position }: { position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' }) {
+  const positionClasses = {
+    'top-left': 'top-4 left-4',
+    'top-right': 'top-4 right-4 rotate-90',
+    'bottom-left': 'bottom-4 left-4 -rotate-90',
+    'bottom-right': 'bottom-4 right-4 rotate-180'
+  };
+
+  return (
+    <div className={`absolute ${positionClasses[position]} w-16 h-16 opacity-30 pointer-events-none`}>
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M10 10 L10 40 Q10 50 20 50 L40 50 M10 10 L40 10 Q50 10 50 20 L50 40"
+          stroke="currentColor"
+          strokeWidth="2"
+          className="text-amber-500"
+        />
+        <circle cx="10" cy="10" r="3" fill="currentColor" className="text-amber-400" />
       </svg>
     </div>
   );
@@ -56,117 +74,200 @@ export const WelcomeView = ({
   onStartCall,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
-    <div ref={ref} className="min-h-screen relative overflow-hidden">
-      {/* Physics Wallah brand colors gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-50/80 via-white to-purple-50/80 dark:from-orange-950/20 dark:via-gray-900 dark:to-purple-950/20" />
-      
-      {/* Floating animated orbs - Physics Wallah colors */}
-      <div className="absolute top-20 left-10 w-96 h-96 bg-orange-400/15 dark:bg-orange-500/10 rounded-full blur-3xl animate-float" />
-      <div className="absolute bottom-20 right-10 w-80 h-80 bg-purple-400/15 dark:bg-purple-500/10 rounded-full blur-3xl animate-float-delayed" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-red-400/10 dark:bg-red-500/8 rounded-full blur-3xl animate-pulse" />
-      
-      <section className="relative bg-transparent flex flex-col items-center justify-center text-center min-h-screen px-4 py-12">
-        <div className="max-w-3xl mx-auto space-y-8">
-          <WelcomeImage />
+    <div ref={ref} className="relative min-h-screen overflow-hidden">
+      {/* Animated background layers */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Radial gradients */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-radial from-purple-900/20 via-purple-900/5 to-transparent blur-3xl animate-pulse"
+          style={{ animationDuration: '4s' }} />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-gradient-radial from-amber-900/15 via-amber-900/5 to-transparent blur-3xl animate-pulse"
+          style={{ animationDuration: '5s', animationDelay: '1s' }} />
 
-          <div className="space-y-4">
-            {/* Main heading with Physics Wallah tagline */}
-            <div className="space-y-2">
-              <h1 className="text-5xl md:text-7xl font-black bg-gradient-to-r from-orange-600 via-red-600 to-purple-600 dark:from-orange-400 dark:via-red-400 dark:to-purple-400 bg-clip-text text-transparent tracking-tight">
-                Physics Wallah
-              </h1>
-              <div className="flex items-center justify-center gap-2 text-lg md:text-xl font-bold text-orange-600 dark:text-orange-400">
-                <span className="inline-block w-8 h-1 bg-gradient-to-r from-orange-500 to-red-500 rounded-full"></span>
-                <p className="tracking-wide">Padhega India Tab Badhega India</p>
-                <span className="inline-block w-8 h-1 bg-gradient-to-r from-red-500 to-purple-500 rounded-full"></span>
-              </div>
-            </div>
-            
-            <p className="text-foreground/90 max-w-2xl mx-auto pt-2 leading-8 font-medium text-xl md:text-2xl">
-              Talk to our AI counselor about your{' '}
-              <span className="text-orange-600 dark:text-orange-400 font-bold">JEE</span> or{' '}
-              <span className="text-purple-600 dark:text-purple-400 font-bold">NEET</span>{' '}
-              preparation journey
-            </p>
+        {/* Floating particles */}
+        {mounted && (
+          <>
+            <FloatingParticle delay={0} duration={8} x="10%" y="20%" />
+            <FloatingParticle delay={1} duration={10} x="85%" y="30%" />
+            <FloatingParticle delay={2} duration={9} x="25%" y="70%" />
+            <FloatingParticle delay={0.5} duration={11} x="75%" y="60%" />
+            <FloatingParticle delay={1.5} duration={7} x="50%" y="15%" />
+            <FloatingParticle delay={2.5} duration={9} x="90%" y="80%" />
+            <FloatingParticle delay={3} duration={10} x="15%" y="85%" />
+            <FloatingParticle delay={0.8} duration={8} x="60%" y="90%" />
+          </>
+        )}
+      </div>
 
-            <p className="text-muted-foreground max-w-xl mx-auto text-base md:text-lg leading-relaxed">
-              Get personalized guidance on courses, pricing, and exam preparation at India's most affordable coaching platform
-            </p>
+      {/* Decorative corner ornaments */}
+      <CornerOrnament position="top-left" />
+      <CornerOrnament position="top-right" />
+      <CornerOrnament position="bottom-left" />
+      <CornerOrnament position="bottom-right" />
+
+      {/* Main content */}
+      <section className="relative z-10 flex flex-col items-center justify-center text-center px-6 py-20 min-h-screen">
+        {/* Ornate border container */}
+        <div className="relative max-w-4xl mx-auto">
+          {/* Top decorative line */}
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
+          <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex gap-2">
+            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }} />
+            <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
           </div>
 
-          <div className="flex flex-col items-center gap-6 pt-6">
-            <Button 
-              variant="primary" 
-              size="lg" 
-              onClick={onStartCall} 
-              className="w-80 font-bold text-xl py-7 bg-gradient-to-r from-orange-500 via-red-500 to-purple-600 hover:from-orange-600 hover:via-red-600 hover:to-purple-700 shadow-2xl shadow-orange-500/40 hover:shadow-orange-500/60 transition-all duration-300 hover:scale-105 rounded-2xl border-2 border-white/20"
-            >
-              <span className="flex items-center gap-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                {startButtonText}
+          <DragonIcon />
+
+          {/* Title with ornate styling */}
+          <div className="relative inline-block mb-6">
+            <h1 className="text-5xl md:text-7xl font-bold mb-2 tracking-tight relative z-10"
+              style={{
+                fontFamily: 'Georgia, serif',
+                textShadow: '0 0 20px rgba(251, 191, 36, 0.5), 0 0 40px rgba(251, 191, 36, 0.3)'
+              }}>
+              <span className="bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+                Epic Fantasy
               </span>
-            </Button>
-            
-            {/* Feature highlights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 w-full max-w-3xl">
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-5 border border-orange-200/50 dark:border-orange-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="text-3xl mb-2">📚</div>
-                <h3 className="font-bold text-orange-600 dark:text-orange-400 mb-1">Lakshya & Arjuna</h3>
-                <p className="text-sm text-muted-foreground">Complete JEE/NEET programs</p>
-              </div>
-              
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-5 border border-purple-200/50 dark:border-purple-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="text-3xl mb-2">₹</div>
-                <h3 className="font-bold text-purple-600 dark:text-purple-400 mb-1">₹3,999/year</h3>
-                <p className="text-sm text-muted-foreground">40x cheaper than Kota</p>
-              </div>
-              
-              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-5 border border-red-200/50 dark:border-red-800/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                <div className="text-3xl mb-2">👨‍🏫</div>
-                <h3 className="font-bold text-red-600 dark:text-red-400 mb-1">Expert Faculty</h3>
-                <p className="text-sm text-muted-foreground">By Alakh Pandey Sir & team</p>
-              </div>
-            </div>
+              <br />
+              <span className="bg-gradient-to-r from-amber-500 via-yellow-600 to-amber-700 bg-clip-text text-transparent">
+                Adventure
+              </span>
+            </h1>
+            {/* Decorative underline */}
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent rounded-full" />
+          </div>
 
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-6 text-sm font-semibold pt-4">
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-                <span className="text-foreground">7M+ Students</span>
+          {/* Dragon emoji with glow */}
+          <div className="text-6xl mb-6 animate-bounce" style={{
+            animationDuration: '3s',
+            filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.6))'
+          }}>
+            🐉
+          </div>
+
+          {/* Description with ornate box */}
+          <div className="relative max-w-2xl mx-auto mb-8 p-6 rounded-lg"
+            style={{
+              background: 'linear-gradient(135deg, rgba(251, 191, 36, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%)',
+              border: '1px solid rgba(251, 191, 36, 0.2)',
+              boxShadow: '0 0 30px rgba(251, 191, 36, 0.1), inset 0 0 30px rgba(251, 191, 36, 0.05)'
+            }}>
+            <p className="text-amber-100 text-xl md:text-2xl leading-8 font-medium mb-4">
+              Embark on a <span className="text-amber-300 font-bold">voice-guided journey</span> through a world of dragons, magic, and ancient mysteries.
+            </p>
+
+            <p className="text-amber-200/70 text-base md:text-lg leading-7">
+              Your Game Master awaits to guide you through an epic tale of adventure, peril, and glory.
+            </p>
+
+            {/* Decorative dots */}
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 flex gap-1">
+              <div className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+              <div className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+              <div className="w-1.5 h-1.5 bg-amber-400 rounded-full" />
+            </div>
+          </div>
+
+          {/* Call to action */}
+          <div className="flex flex-col items-center gap-4 mt-10">
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={onStartCall}
+              className="fantasy-glow w-80 font-bold text-xl py-8 rounded-xl relative overflow-hidden group"
+              style={{
+                background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #d97706 100%)',
+                backgroundSize: '200% 100%',
+                animation: 'shimmer 3s ease-in-out infinite',
+                boxShadow: '0 0 40px rgba(251, 191, 36, 0.6), 0 10px 30px rgba(0, 0, 0, 0.3)',
+                border: '2px solid rgba(251, 191, 36, 0.5)'
+              }}
+            >
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                <span className="text-2xl">⚔️</span>
+                <span style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.05em' }}>
+                  BEGIN ADVENTURE
+                </span>
+                <span className="text-2xl">⚔️</span>
+              </span>
+              {/* Shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            </Button>
+
+            {/* Feature badges */}
+            <div className="flex gap-6 mt-4">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-950/30 border border-amber-500/30">
+                <span className="text-xl">🎙️</span>
+                <span className="text-amber-200 text-sm font-medium">Voice-Powered</span>
               </div>
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" style={{animationDelay: '0.2s'}} />
-                <span className="text-foreground">IIT/AIIMS Success</span>
-              </div>
-              <div className="flex items-center gap-2 bg-white/50 dark:bg-gray-800/50 px-4 py-2 rounded-full backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" style={{animationDelay: '0.4s'}} />
-                <span className="text-foreground">Free YouTube Classes</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-950/30 border border-amber-500/30">
+                <span className="text-xl">🎲</span>
+                <span className="text-amber-200 text-sm font-medium">Interactive Story</span>
               </div>
             </div>
           </div>
+
+          {/* Bottom decorative line */}
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-amber-500/50 to-transparent" />
         </div>
       </section>
 
-      <div className="fixed bottom-8 left-0 flex w-full items-center justify-center px-4 z-10">
-        <div className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-lg rounded-2xl px-8 py-4 border border-orange-200/50 dark:border-orange-800/50 shadow-2xl">
-          <p className="text-muted-foreground max-w-prose text-sm leading-6 font-medium text-center">
-            Powered by <span className="text-orange-600 dark:text-orange-400 font-bold">Murf Falcon TTS</span> • 
-            The fastest voice AI for education •{' '}
+      {/* Footer */}
+      <div className="fixed bottom-8 left-0 right-0 flex justify-center z-20">
+        <div className="px-6 py-3 rounded-full bg-black/40 backdrop-blur-md border border-amber-500/20">
+          <p className="text-amber-200/60 text-xs md:text-sm">
+            Powered by <span className="text-amber-300 font-semibold">LiveKit Agents</span> & <span className="text-amber-300 font-semibold">Murf Falcon TTS</span> •{' '}
             <a
               target="_blank"
               rel="noopener noreferrer"
-              href="https://www.pw.live"
-              className="text-purple-600 dark:text-purple-400 font-semibold underline hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+              href="https://docs.livekit.io/agents/start/voice-ai/"
+              className="text-amber-400 hover:text-amber-300 transition-colors underline"
             >
-              Visit Physics Wallah
+              Learn more
             </a>
           </p>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+          }
+          50% {
+            transform: translateY(-20px) rotate(5deg);
+          }
+        }
+
+        @keyframes float-particle {
+          0%, 100% {
+            transform: translate(0, 0);
+            opacity: 0;
+          }
+          10%, 90% {
+            opacity: 1;
+          }
+          50% {
+            transform: translate(var(--tx, 20px), var(--ty, -100px));
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
+        }
+      `}</style>
     </div>
   );
 };
-

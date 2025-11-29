@@ -160,6 +160,18 @@ export function AgentControlBar({
           </Toggle>
         </div>
 
+        {/* Restart Story */}
+        <Button
+          variant="secondary"
+          onClick={handleDisconnect}
+          disabled={!isSessionActive}
+          className="font-mono"
+          title="Restart the adventure"
+        >
+          <span className="text-base">🔄</span>
+          <span className="hidden md:inline">RESTART</span>
+        </Button>
+
         {/* Disconnect */}
         {visibleControls.leave && (
           <Button
